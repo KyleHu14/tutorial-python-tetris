@@ -219,15 +219,26 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
+                    if not valid_space(current_piece, grid):
+                        current_piece.x += 1
 
                 if event.key == pygame.K_RIGHT:
                     current_piece.x += 1
+                    if not valid_space(current_piece, grid):
+                        current_piece.x -= 1
 
                 if event.key == pygame.K_DOWN:
-                    current_piece.y -= 1
+                    current_piece.y += 1
+                    if not valid_space(current_piece, grid):
+                        current_piece.y -= 1
 
                 if event.key == pygame.K_UP:
                     current_piece.rotation += 1
+                    if not(valid_space(current_piece, grid)):
+                        current_piece.rotation -= 1
+
+#26:33
+
 
 def main_menu():
     pass
