@@ -167,7 +167,7 @@ def check_lost(positions):
     pass
 
 def get_shape():
-    return random.choice(shapes)
+    return Piece(5, 0, random.choice(shapes))
 
 def draw_text_middle(text, size, color, surface):  
     pass
@@ -215,8 +215,19 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False 
-
             
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    current_piece.x -= 1
+
+                if event.key == pygame.K_RIGHT:
+                    current_piece.x += 1
+
+                if event.key == pygame.K_DOWN:
+                    current_piece.y -= 1
+
+                if event.key == pygame.K_UP:
+                    current_piece.rotation += 1
 
 def main_menu():
     pass
