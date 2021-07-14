@@ -139,7 +139,11 @@ shape_colors = [(0, 255, 0), (255, 0, 0), (0, 255, 255), (255, 255, 0), (255, 16
 
 
 class Piece(object):
-    def _init__(self, x, y, shape):
+    # Represents a tetris piece in the game
+    # Has x and y coordinates
+    # Has the color
+    # Has the rotation
+    def __init__(self, x, y, shape):
         self.x = x
         self.y = y
         self.shape = shape 
@@ -147,6 +151,9 @@ class Piece(object):
         self.rotation = 0
 
 def create_grid(locked_positions={}):
+    # Creates a 2x2 list
+    # The list represents the color value of each cell in the grid
+    # If there is a locked position, that means we need to change it as it shouldn't be (0,0,0)
     grid = [[(0,0,0) for x in range(10)] for x in range(20)]
 
     for i in range(len(grid)):
@@ -158,10 +165,32 @@ def create_grid(locked_positions={}):
     return grid
 
 def convert_shape_format(shape):
-    pass
+    # Takes in a piece object
+
+    positions = []
+    format = shape.shape[shape.rotation % len(shape.shape)] 
+
+    for i, line in enumerate(format):
+        row = list(line)
+        for j, column in enumerate(row):
+            if column == '0':
+                positions.append((shape.x + j, shape.y + i))
+    
+    for i, pos in enumerate(positions):
+        positions[i] = (pos[0] - 2, pos[1] - 4)
 
 def valid_space(shape, grid):
-    pass
+    accepted_pos = [ [(j, i) for j in range(10) if grid[i][j] == (0,0,0)]  for i in range(20) ]
+    accepted_pos = [j for sub in accepted_pos for j in sub]
+
+    formatted = convert_shape_format(shape) 
+
+    for pos in formatted:
+        if pos not in accepted_pos:
+            if pos [1] > -1:
+                return False
+    return True
+
 
 def check_lost(positions):
     pass
@@ -173,12 +202,18 @@ def draw_text_middle(text, size, color, surface):
     pass
    
 def draw_grid(surface, grid):
+    # Draws the the grey grid of the game
+    # Does this by looping through every single part of the grid
+    # First for loop draws horizontal lines
+    # Second for loop draws vertical lines
+
+    sx = top_left_x # Top left x coordinate of the play area
+    sy = top_left_y # Top left y coordinate of the play area
+
     for i in range(len(grid)):
+        pygame.draw.line(surface, (128,128,128), (sx, sy + i*block_size), (sx + play_width, sy + i*block_size))
         for j in range(len(grid[i])):
-            pygame.draw.rect(surface, grid[i][j], (top_left_x + j*block_size, top_left_y + i*block_size, block_size, block_size), 0)
-
-    pygame.draw.rect(surface, (255,0,0), (top_left_x, top_left_y, play_width, play_height), 4)
-
+            pygame.draw.line(surface, (128,128,128), (sx + j*block_size, sy), (sx + j*block_size, sy + play_height))
 
 
 def clear_rows(grid, locked):
@@ -188,18 +223,29 @@ def draw_next_shape(shape, surface):
     pass
 
 def draw_window(surface, grid):
+    # Draws the game window
+    # Fills a window with black
+    # Draws the play area
+
     surface.fill((0,0,0))
 
     pygame.font.init()
     font = pygame.font.SysFont('comicsans', 60)
     label = font.render('Tetris', 1, (255,255,255))
+    
 
     surface.blit(label, (top_left_x + play_width/2 - label.get_width()/2, 30))
+
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            pygame.draw.rect(surface, grid[i][j], (top_left_x + j*block_size, top_left_y + i*block_size, block_size, block_size), 0)
+
+    pygame.draw.rect(surface, (255,0,0), (top_left_x, top_left_y, play_width, play_height), 4)
 
     draw_grid(surface,grid)
     pygame.display.update()
 
-def main():
+def main(win):
 
     locked_positions = {}
     grid = create_grid(locked_positions)
@@ -210,6 +256,8 @@ def main():
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
+
+    draw_window (win, grid)
 
     while run:
         for event in pygame.event.get():
@@ -237,10 +285,12 @@ def main():
                     if not(valid_space(current_piece, grid)):
                         current_piece.rotation -= 1
 
-#26:33
+    draw_window (win, grid)
 
 
-def main_menu():
-    pass
+def main_menu(win):
+    main(win)
 
-main_menu()  # start game
+win = pygame.display.set_mode((s_width, s_height))
+pygame.display.set_caption('Tetris')
+main_menu(win)  # start game
