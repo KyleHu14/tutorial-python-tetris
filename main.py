@@ -180,11 +180,18 @@ def convert_shape_format(shape):
         positions[i] = (pos[0] - 2, pos[1] - 4)
 
 def valid_space(shape, grid):
-    accepted_pos = [ [(j, i) for j in range(10) if grid[i][j] == (0,0,0)]  for i in range(20) ]
+    # The line below first creates accepted_pos
+    # accepted_pos is a 2d list that has tuples of grid coordinates of the 10x20 rectangle
+    accepted_pos = [ [(j, i) for j in range(10) if grid[i][j] == (0,0,0)]  for i in range(20) ]  
+
+    # The line below converts accepted_pos into a single list that has all the grid coordinates
+    # accepted_pos stands for accepted positions which serves as a reference of which coordinates are correct
     accepted_pos = [j for sub in accepted_pos for j in sub]
 
+    # Formatted is a list that contains coordinates of a shape that is on the game board
     formatted = convert_shape_format(shape) 
 
+    # This for loop serves as a way to check if the coordinates are in a valid spot
     for pos in formatted:
         if pos not in accepted_pos:
             if pos [1] > -1:
@@ -193,7 +200,12 @@ def valid_space(shape, grid):
 
 
 def check_lost(positions):
-    pass
+    for pos in positions:
+        x, y = pos 
+        if y < 1:
+            return True
+    
+    return False 
 
 def get_shape():
     return Piece(5, 0, random.choice(shapes))
@@ -256,10 +268,24 @@ def main(win):
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
+    fall_speed = 0.27 # How long it takes for a shape to start falling
 
     draw_window (win, grid)
 
     while run:
+        grid = create_grid(locked_positions)
+        fall_time += clock.get_rawtime() #Gets the amount of time since clock.tick()
+        clock.tick()
+
+        if fall_time/1000 > fall_speed:
+            fall_time = 0
+            current_piece.y += 1 # moves down the piece by 1
+            if not(valid_space(current_piece,grid)) and current_piece.y > 0:
+                current_piece.y -= 1
+                # We either hit a new piece or have hit the bottom
+                # Change piece means that now we need to change a new piece 
+                change_piece = True 
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False 
@@ -285,7 +311,38 @@ def main(win):
                     if not(valid_space(current_piece, grid)):
                         current_piece.rotation -= 1
 
-    draw_window (win, grid)
+        shape_pos = convert_shape_format(current_piece)
+
+        for i in range(len(shape_pos)):
+            x, y = shape_pos[i]
+            # We don't need to update a color of a piece if the piece hasn't showed up at row 0
+            if y > -1:
+                grid[y][x] = current_piece.color
+
+        # Checking if change_piece is true which basically means if a piece has been locked
+        if change_piece:
+            for pos in shape_pos: 
+                p = (pos[0], pos[1])
+                # 1. What is locked_posistions? 
+                # locked_posistion is a dictionary in a form like the following :
+                # {(1,2):(255,255,255)}
+                # Basically a coordinate, and a color associated with said coordinate
+
+                # 2. What does a locked posistion mean?
+                # Simply a locked posistion or a posistion that will not move anymore
+                locked_positions[p] = current_piece.color
+            current_piece = next_piece
+            next_piece = get_shape()
+            change_piece = False
+
+        draw_window (win, grid)
+
+        # Checking if we have actually lost the game
+        # If the game has been lost, the while loop will cancel and jump to the area outside of this while loop
+        if check_lost(locked_positions):
+            run = False 
+    
+    pygame.display.quit()
 
 
 def main_menu(win):
