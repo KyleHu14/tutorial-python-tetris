@@ -179,6 +179,8 @@ def convert_shape_format(shape):
     for i, pos in enumerate(positions):
         positions[i] = (pos[0] - 2, pos[1] - 4)
 
+    return positions
+
 def valid_space(shape, grid):
     # The line below first creates accepted_pos
     # accepted_pos is a 2d list that has tuples of grid coordinates of the 10x20 rectangle
@@ -232,7 +234,13 @@ def clear_rows(grid, locked):
     pass
 
 def draw_next_shape(shape, surface):
-    pass
+    # Draws the next shape on the screen and shows the user what it is 
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('Next Shape:', 1, (255,255,255))
+
+    # This part will focus on drawing the particular label we have created above
+    sx = top_left_x + play_width + 50
+    sy = top_left_y + play_height/2 - 100
 
 def draw_window(surface, grid):
     # Draws the game window
@@ -258,7 +266,6 @@ def draw_window(surface, grid):
     pygame.display.update()
 
 def main(win):
-
     locked_positions = {}
     grid = create_grid(locked_positions)
 
@@ -274,8 +281,8 @@ def main(win):
 
     while run:
         grid = create_grid(locked_positions)
-        fall_time += clock.get_rawtime() #Gets the amount of time since clock.tick()
-        clock.tick()
+        fall_time += clock.get_rawtime() # Gets the amount of time since clock.tick(), fall_time is in the units of miliseconds
+        clock.tick() # A function that is called once per frame, limits runspeed of a game and makes sure that it runs consistently on all machines
 
         if fall_time/1000 > fall_speed:
             fall_time = 0
@@ -293,17 +300,17 @@ def main(win):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
-                    if not valid_space(current_piece, grid):
+                    if not (valid_space(current_piece, grid)):
                         current_piece.x += 1
 
                 if event.key == pygame.K_RIGHT:
                     current_piece.x += 1
-                    if not valid_space(current_piece, grid):
+                    if not (valid_space(current_piece, grid)):
                         current_piece.x -= 1
 
                 if event.key == pygame.K_DOWN:
                     current_piece.y += 1
-                    if not valid_space(current_piece, grid):
+                    if not (valid_space(current_piece, grid)):
                         current_piece.y -= 1
 
                 if event.key == pygame.K_UP:
