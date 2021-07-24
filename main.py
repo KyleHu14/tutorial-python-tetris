@@ -165,7 +165,13 @@ def create_grid(locked_positions={}):
     return grid
 
 def convert_shape_format(shape):
-    # Takes in a piece object
+    # Takes in a piece object (called shape)
+    # 1. Format
+    # Format represents a list that contains the correct rotation/orientation of the current piece at hand
+    # If a piece has 4 different kinds of rotations, then format works by doing the following :
+    # If the piece is in the first state of rotation, then it will be 0 % 4 which is 0, etc.
+    # 2. First For Loop
+    # Adds the location of the 0s in the shape, 
 
     positions = []
     format = shape.shape[shape.rotation % len(shape.shape)] 
@@ -240,7 +246,7 @@ def draw_next_shape(shape, surface):
 
     # This part will focus on drawing the particular label we have created above
     sx = top_left_x + play_width + 50
-    sy = top_left_y + play_height/2 - 100
+    sy = top_left_y + play_height/2 - 100 
 
 def draw_window(surface, grid):
     # Draws the game window
