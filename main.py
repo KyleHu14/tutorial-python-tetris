@@ -171,7 +171,8 @@ def convert_shape_format(shape):
     # If a piece has 4 different kinds of rotations, then format works by doing the following :
     # If the piece is in the first state of rotation, then it will be 0 % 4 which is 0, etc.
     # 2. First For Loop
-    # Adds the location of the 0s in the shape, 
+    # Adds the location of the 0s in the shape, we need to add i and j to the shape.x since it gives us the true coords
+
 
     positions = []
     format = shape.shape[shape.rotation % len(shape.shape)] 
@@ -180,7 +181,7 @@ def convert_shape_format(shape):
         row = list(line)
         for j, column in enumerate(row):
             if column == '0':
-                positions.append((shape.x + j, shape.y + i))
+                positions.append((shape.x + i, shape.y + j))
     
     for i, pos in enumerate(positions):
         positions[i] = (pos[0] - 2, pos[1] - 4)
@@ -237,7 +238,29 @@ def draw_grid(surface, grid):
 
 
 def clear_rows(grid, locked):
-    pass
+    inc = 0
+    # Loops thru grid backwards
+    for i in range(len(grid)-1, -1, -1):
+        row = grid[i]
+        if (0,0,0) not in row:
+            inc += 1
+            ind = i
+            for j in range(len(row)):
+                try : 
+                    del locked[(j,i)]
+                except:
+                    continue
+    
+    if inc > 0:
+        # Given a list that looks like [(0,1), (0,0)] --> [(0,0), (0,1)]
+        # Get all the posistions that have the same y value in together in the same order
+        for key in sorted(list(locked), key = lambda x:x[1])[::-1]:
+            x, y = key
+            if y < ind :
+                newKey = (x, y + inc)
+                locked[newKey] = locked.pop(key)
+
+
 
 def draw_next_shape(shape, surface):
     # Draws the next shape on the screen and shows the user what it is 
@@ -247,6 +270,18 @@ def draw_next_shape(shape, surface):
     # This part will focus on drawing the particular label we have created above
     sx = top_left_x + play_width + 50
     sy = top_left_y + play_height/2 - 100 
+
+    format = shape.shape[shape.rotation % len(shape.shape)]
+
+    for i, line in enumerate(format):
+        row = list(line)
+        for j, column in enumerate(row):
+            if column == '0':
+                pygame.draw.rect(surface, shape.color, (sx + j*block_size, sy + i*block_size, block_size, block_size), 0)
+    
+    surface.blit(label, (sx + 10, sy - 30))
+
+
 
 def draw_window(surface, grid):
     # Draws the game window
@@ -269,7 +304,7 @@ def draw_window(surface, grid):
     pygame.draw.rect(surface, (255,0,0), (top_left_x, top_left_y, play_width, play_height), 4)
 
     draw_grid(surface,grid)
-    pygame.display.update()
+    # pygame.display.update()
 
 def main(win):
     locked_positions = {}
@@ -347,8 +382,13 @@ def main(win):
             current_piece = next_piece
             next_piece = get_shape()
             change_piece = False
+            clear_rows(grid, locked_positions)
 
+
+        
         draw_window (win, grid)
+        draw_next_shape(next_piece, win)
+        pygame.display.update()
 
         # Checking if we have actually lost the game
         # If the game has been lost, the while loop will cancel and jump to the area outside of this while loop
